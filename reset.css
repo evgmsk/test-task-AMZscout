@@ -42,12 +42,15 @@ table {
 }
 a {
   text-decoration: none;
+  color: inherit;
 }
 button, a {
     cursor: pointer;
     outline: none;
 }
-
+textarea:focus, input:focus{
+    outline: none;
+}
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
       -webkit-user-select: none; /* Safari */

@@ -5,14 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=2.0, user-scalable=yes">
     <meta name="description" content="test-task">
     <title>Test task</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
     <link href="reset.css" rel="stylesheet">
 </head>
 <body>
     <header class="header">
-      
+        <div class="header_nav-container">
+            <div class="header_nav-wrapper">
+                <nav class="header_nav">
+                    <div class="logo"></div>
+                    <ul>
+                        <li>
+                            <a href="#1">Menu Item 1</a>
+                        </li>
+                        <li>
+                            <a href="#2">Menu Item 2</a>
+                        </li>
+                        <li>
+                            <a href="#3">Menu Item 3</a>
+                        </li>
+                        <li>
+                            <a href="#3">Menu Item 4</a>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="login-wrapper">
+                    <a href=#login>LOG IN &nbsp;/&nbsp;SIGN UP</a>
+                </div>
+            </div>
+        </div>
+        
+        <form class="header_search-form">
+            <div class="input-wrapper">
+                <input id="length" type="text" name="length">
+                <label for="length">Length</label>
+            </div>
+            <div class="input-wrapper">
+                <input id="limit" type="text" name="limit">
+                <label for="limit">Limit</label>
+            </div>
+            <input type="submit" value="Search">
+        </form>
     </header>
-    <main class="main">
+    <main id="content" >
   
     </main>
     <footer class="footer">

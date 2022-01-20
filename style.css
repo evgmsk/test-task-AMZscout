@@ -1,0 +1,143 @@
+html {
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    min-width: 320px;
+}
+
+.header {
+    height: 152px;
+    box-shadow: 0px 2px 4px 0px #0000001A;
+}
+
+.logo {
+    background: no-repeat url("./assets/vk-icon-png-15\ 1.png");
+    height: 52px;
+    width: 52px;
+}
+
+.header_nav-container {
+
+    box-shadow: 0px 2px 4px 0px #0000001A;
+}
+
+.header_nav-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 21px;
+    letter-spacing: 0em;
+    text-align: left;
+}
+
+.header_nav {
+    display: flex;
+    align-items: center;
+    height: 72px;
+    font: inherit;
+}
+
+.header_nav a {
+    margin-left: 30px;
+    font: inherit;
+}
+
+.header_nav ul {
+    align-items: center;
+    display: flex;   
+}
+
+.login-wrapper {
+    font: inherit;
+}
+
+.header_search-form {
+    position: fixed;
+    max-width: 100px;
+    width: 100%;
+    top: 72px;
+    left: 50vw;
+    transform: translateX(-50%);
+    max-width: 1000px;
+    height: 80px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.input-wrapper {
+    position: relative;
+    margin-right: 50px;
+    flex-grow: 1.2;
+    box-sizing: border-box;
+}
+
+.input-wrapper input {
+    width: 100%;
+    height: 38px;
+    border-top: transparent;
+    border-left: transparent;
+    border-right: transparent;
+    border-bottom-color: #E5E5E5;
+    box-sizing: border-box;
+}
+
+
+.input-wrapper input:hover,  .input-wrapper input:focus{
+    border-bottom-color: #b5b5b5;
+}
+
+.input-wrapper label {
+    position: absolute;
+    color: #888888;
+    left: 0;
+    top: 15px;
+    font-family: Roboto;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0em;
+    transition: all .3s;
+}
+
+.input-wrapper:hover label {
+    color: #777777;
+}
+
+input[type="submit"] {
+    width: 200px;
+    height: 32px;
+    background: #E5E5E5;
+    color: #fff;
+    border: none;
+    transition: all .3s;
+}
+
+input[type="submit"]:hover {
+    background: #b5b5b5;
+}
+
+input:focus + label {
+    position: absolute;
+    left: 0;
+    top: -5px;
+    color: #777777
+}
+
+@media (min-width: 900px) {
+    html {
+        font-size: 14px;
+    }
+}
+@media (min-width: 1200px) {
+    html {
+        font-size: 16px;
+    }
+}
