@@ -37,21 +37,23 @@
                 </div>
             </div>
         </div>
+        <div class="header_search-container">
+            <form class="header_search-form" id="search" >
+                <div class="input-wrapper">
+                    <input id="length" type="text" name="length">
+                    <label for="length">Length</label>
+                </div>
+                <div class="input-wrapper">
+                    <input id="limit" type="text" name="limit">
+                    <label for="limit">Limit</label>
+                </div>
+                <input type="submit" value="Search" id='submit'>
+            </form>
+        </div>
         
-        <form class="header_search-form">
-            <div class="input-wrapper">
-                <input id="length" type="text" name="length">
-                <label for="length">Length</label>
-            </div>
-            <div class="input-wrapper">
-                <input id="limit" type="text" name="limit">
-                <label for="limit">Limit</label>
-            </div>
-            <input type="submit" value="Search">
-        </form>
     </header>
     <main id="content" >
-  
+        <input class="progress" type="text" value='' id="progress" hidden="true">
     </main>
     <footer class="footer">
         <div class="footer_content">

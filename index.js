@@ -1,3 +1,5 @@
+// Constants & and helper functions  
+
 const TextSource = `"Well, Prince, so Genoa and Lucca are now just family estates of the Buonapartes. But I warn you, if you don't tell me that this means war, if you still try to defend the infamies and horrors perpetrated by that Antichrist--I really believe he is Antichrist--I will have nothing more to do with you and you are no longer my friend, no longer my 'faithful slave,' as you call yourself! But how do you do? I see I have frightened you--sit down and tell me all the news."
 
 It was in July, 1805, and the speaker was the well-known Anna Pavlovna Scherer, maid of honor and favorite of the Empress Marya Fedorovna. With these words she greeted Prince Vasili Kuragin, a man of high rank and importance, who was the first to arrive at her reception. Anna Pavlovna had had a cough for some days. She was, as she said, suffering from la grippe; grippe being then a new word in St. Petersburg, used only by the elite.
@@ -30,32 +32,149 @@ In the midst of a conversation on political matters Anna Pavlovna burst out:
 
 const LoremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
-const sentenceArray = TextSource.split(/[.?!]/).map(i => i.replace(/\s+/gm, " "))
+let pattern = /(?<=(\.|\?|\!)"?)\s+/gm
+const sentenceArray = TextSource.split(pattern)
+    .filter(i => i !== '.' && i !== '!' && i !== '?')
+    .map(i => i.replace(/\s+/gm, " "))
+    .reduce((acc, item, i) => {
+        if (item[0] === item[0].toLocaleLowerCase) {
+            acc[i-1] = acc[i-1].concat(item)
+        } acc.push(item)
+        return acc
+    }, []).map(i => i.replace(/("|')/g, ''))
+// console.log(sentenceArray)
+const textLengthRandomiser = () => Math.floor(Math.random() * 190 + 10)
 
-const randomTextLength = () => Math.floor(Math.random() * 190 + 10)
+const titleGenerator = () => LoremIpsum.substring(0, textLengthRandomiser())
 
-const textGenerator = () => LoremIpsum.substring(0, randomTextLength())
+const itemsGenerator = (dimension) => new Array(dimension).fill(0).map((item) => titleGenerator())
 
-const arrayGenerator = (dimension) => new Array(dimension).fill(0).map((item) => textGenerator())
-
-const mapper = (item, index) => new Promise((resolve) => {clewar
-    const res = {index, title: item, description: sentenceArray[index]}
-    setTimeout(resolve(res), Math.round(Math.random() * 9000) + 1000);
+const mapper = (item) => new Promise((resolve) => {
+    // resolve = resolveQueue
+    setTimeout(() => resolve(item), Math.round(Math.random() * 9000) + 1000);
 })
 
-function queue(arr, fn, limit = 10) {
-    const res = []
-    let requested = 0
-    let current = 0
-    const limitedQueue = () => {
-        if (current === arr.length - 1 || requested === limit) return
-        requested += 1
-        current += 1
-        res.push(fn(arr[current], current))
-        return limitedQueue()
-    }
-    if (current < arr.length) {
-        limitedQueue()
-    }
+const FormState = {length: 0, limit: 10}
 
+const Content = document.querySelector('#content')
+const searchForm = this.document.querySelector('.header_search-container')
+const inputs = {
+    limit: document.querySelector('#limit'),
+    length: document.querySelector('#length'),
+    submit: document.querySelector('#submit'),
+    progress: document.querySelector('#progress')
+}
+
+// variables
+
+const requested = {}
+let requestedLength = 0
+let lastRequested = 0
+let Items = []
+
+function queue(arr, fn, limit = 10) {
+    console.log(arr, requested, requestedLength, lastRequested, limit)
+    const Item = drawItem(arr[lastRequested])
+    requested[lastRequested] = fn(arr[lastRequested])
+    lastRequested += 1
+    requestedLength += 1
+    console.log(requestedLength, lastRequested, arr.filter(l => !l.resolved))
+    if (requestedLength < limit && lastRequested <= arr.length - 1) {        
+        return queue(arr, fn, limit)
+    }
+    return resolveQueue(requested)
+}
+
+const resolveQueue = (requested) => {
+    Promise.any(Object.values(requested)).then(item => {
+        const key = item.index
+        Items[key].resolved = true
+        delete requested[key]
+        updateItem(Items[key])
+        requestedLength -= 1
+        setProgress()
+        if (lastRequested <= Items.length - 1 && requestedLength < FormState.limit) {
+            return queue(Items, mapper, FormState.limit)
+        }
+        if (item.index === Items.length - 1) {
+            inputs.submit.removeAttribute('disabled')
+        }
+        if (Items.filter(i => i.resolved).length < Items.length) {
+            return resolveQueue(requested)
+        }
+    })
+}
+
+const setProgress = () => {
+    const resolved = Items.filter(i => i.resolved).length
+    const total = Items.length
+    const progress = `${resolved} of ${total}`
+    inputs.progress.value = progress
+    inputs.progress.removeAttribute('hidden')
+}
+
+function onScroll(e) {
+    if (window.scrollY) {
+        searchForm.classList.add('fixed')
+    } else {
+        searchForm.classList.remove('fixed')
+    }
+}
+
+const onSubmit = (e) => {
+    e.preventDefault()
+    if (!FormState.length) {
+        return
+    }
+    Items = itemsGenerator(FormState.length).map((i , j) => ({
+        index: j, title: i, resolved: false
+    }))
+    lastRequested = 0
+    inputs.submit.setAttribute('disabled', 'true')
+    // console.log(Items)
+    queue(Items, mapper, FormState.limit)
+}
+
+const onChange = (e) => { 
+    const {name, value} = e.target
+    const isNumber = parseInt(value)
+    if (value) {
+        inputs[name].classList.add('dirty')
+    }
+    if (Object.is(isNumber, NaN)) {
+        inputs[name].classList.add('error')
+    } else {
+        FormState[name] =  isNumber
+        inputs[name].classList.remove('error')
+    }  
+    // console.log(name, value, FormState)
+}
+
+const updateItem = (item) => {
+    const selector = `.item-wrapper.item${item.index}`
+    const ItemElement = document.querySelector(selector)
+    ItemElement.querySelector('.item-description').innerHTML = sentenceArray[item.index]
+}
+
+const drawItem = (item) => {
+    let itemClass = `item${item.index}`
+    const itemTemplate =`
+            <h3 class="item-title">${item.index + 1}.&nbsp;${item.title}</h3>
+            <div class="item-description"></div>  
+        `;
+    const Item = document.createElement('div');
+    Item.classList.add('item-wrapper')
+    Item.classList.add(itemClass)
+    Item.innerHTML = itemTemplate;
+    Content.insertAdjacentElement('beforeend', Item)
+}
+
+window.addEventListener('scroll', onScroll);
+searchForm.addEventListener('change', onChange)
+searchForm.addEventListener('submit', onSubmit)
+
+window.onclose = () => {
+    window.removeEventListener('scroll', onScroll)
+    searchForm.removeEventListener('change', onChange)
+    searchForm.removeEventListener('submit', onSubmit)
 }
