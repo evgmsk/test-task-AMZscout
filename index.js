@@ -42,7 +42,7 @@ const sentenceArray = TextSource.split(pattern)
         } acc.push(item)
         return acc
     }, []).map(i => i.replace(/("|')/g, ''))
-// console.log(sentenceArray)
+
 const textLengthRandomiser = () => Math.floor(Math.random() * 190 + 10)
 
 const titleGenerator = () => LoremIpsum.substring(0, textLengthRandomiser())
@@ -50,7 +50,6 @@ const titleGenerator = () => LoremIpsum.substring(0, textLengthRandomiser())
 const itemsGenerator = (dimension) => new Array(dimension).fill(0).map((item) => titleGenerator())
 
 const mapper = (item) => new Promise((resolve) => {
-    // resolve = resolveQueue
     setTimeout(() => resolve(item), Math.round(Math.random() * 9000) + 1000);
 })
 
@@ -65,52 +64,93 @@ const inputs = {
     progress: document.querySelector('#progress')
 }
 
-// variables
-
-const requested = {}
-let requestedLength = 0
-let lastRequested = 0
-let Items = []
-
-function queue(arr, fn, limit = 10) {
-    console.log(arr, requested, requestedLength, lastRequested, limit)
-    const Item = drawItem(arr[lastRequested])
-    requested[lastRequested] = fn(arr[lastRequested])
-    lastRequested += 1
-    requestedLength += 1
-    console.log(requestedLength, lastRequested, arr.filter(l => !l.resolved))
-    if (requestedLength < limit && lastRequested <= arr.length - 1) {        
-        return queue(arr, fn, limit)
+// Queue implemantaion
+class Queue {
+    constructor(props) {
+        this.requested = {}
+        this.requestedLength = 0
+        this.lastRequested = 0
+        this.limit = props.limit
+        this.length = props.length
+        this.items = itemsGenerator(props.length).map((i , j) => ({
+            index: j, title: i, resolved: false
+        }))
     }
-    return resolveQueue(requested)
-}
 
-const resolveQueue = (requested) => {
-    Promise.any(Object.values(requested)).then(item => {
-        const key = item.index
-        Items[key].resolved = true
-        delete requested[key]
-        updateItem(Items[key])
-        requestedLength -= 1
-        setProgress()
-        if (lastRequested <= Items.length - 1 && requestedLength < FormState.limit) {
-            return queue(Items, mapper, FormState.limit)
+    mapper = (item) => new Promise((resolve) => {
+        resolve = item => {
+            const key = item.index
+            this.items[key].resolved = true
+            delete this.requested[key]
+            this.updateItem(this.items[key])
+            this.requestedLength -= 1
+            this.setProgress()
+            if (this.lastRequested <= this.items.length - 1 
+                && this.requestedLength < this.limit) {
+                return this.startQueue(this.items, this.mapper, this.limit)
+            }
+            if (item.index === this.items.length - 1) {
+                inputs.submit.removeAttribute('disabled')
+            }
         }
-        if (item.index === Items.length - 1) {
-            inputs.submit.removeAttribute('disabled')
-        }
-        if (Items.filter(i => i.resolved).length < Items.length) {
-            return resolveQueue(requested)
-        }
+        setTimeout(() => resolve(item), Math.round(Math.random() * 9000) + 1000);
     })
-}
 
-const setProgress = () => {
-    const resolved = Items.filter(i => i.resolved).length
-    const total = Items.length
-    const progress = `${resolved} of ${total}`
-    inputs.progress.value = progress
-    inputs.progress.removeAttribute('hidden')
+    startQueue = (arr = this.items, fn = this.mapper, limit = this.limit) => {
+        if (!this.lastRequested) {
+            this.clearContent()
+        }
+        this.drawItem(arr[this.lastRequested])
+        this.requested[this.lastRequested] = fn(arr[this.lastRequested])
+        this.lastRequested += 1
+        this.requestedLength += 1
+        if (this.requestedLength < this.limit && this.lastRequested <= this.items.length - 1) {        
+            return this.startQueue(arr, fn, limit)
+        }
+    }
+
+    drawItem = (item) => {
+        let itemClass = `item${item.index}`
+        const itemTemplate =`
+                <h3 class="item-title">${item.index + 1}.&nbsp;${item.title}</h3>
+                <div class="item-description"></div>  
+            `;
+        const Item = document.createElement('div');
+        Item.classList.add('item-wrapper')
+        Item.classList.add(itemClass)
+        Item.innerHTML = itemTemplate;
+        Content.insertAdjacentElement('beforeend', Item)
+        setTimeout(() => {
+            document.querySelector(`.item-wrapper.item${item.index}`).classList.add('show-title')
+        })
+       
+    }
+
+    updateItem = (item) => {
+        const selector = `.item-wrapper.item${item.index}`
+        const ItemElement = document.querySelector(selector)
+        ItemElement.querySelector('.item-description').innerHTML = sentenceArray[item.index]
+        setTimeout(() => {
+            document.querySelector(`.item-wrapper.item${item.index}`)
+            .classList.add('show-description')
+        })
+    }
+
+    setProgress = () => {
+        const resolved = this.items.filter(i => i.resolved).length
+        const total = this.items.length
+        const progress = `${resolved} of ${total}`
+        inputs.progress.value = progress
+        inputs.progress.removeAttribute('hidden')
+    }
+
+    clearContent = () => {
+        const nodesToRemove = Content.childNodes;
+        this.setProgress()
+        while (nodesToRemove.length > 2) {
+            nodesToRemove[nodesToRemove.length - 1].remove();
+        }
+    }
 }
 
 function onScroll(e) {
@@ -126,13 +166,12 @@ const onSubmit = (e) => {
     if (!FormState.length) {
         return
     }
-    Items = itemsGenerator(FormState.length).map((i , j) => ({
+    const queue = new Queue(FormState)
+    Items = itemsGenerator(length).map((i , j) => ({
         index: j, title: i, resolved: false
     }))
-    lastRequested = 0
     inputs.submit.setAttribute('disabled', 'true')
-    // console.log(Items)
-    queue(Items, mapper, FormState.limit)
+    queue.startQueue()
 }
 
 const onChange = (e) => { 
@@ -146,27 +185,7 @@ const onChange = (e) => {
     } else {
         FormState[name] =  isNumber
         inputs[name].classList.remove('error')
-    }  
-    // console.log(name, value, FormState)
-}
-
-const updateItem = (item) => {
-    const selector = `.item-wrapper.item${item.index}`
-    const ItemElement = document.querySelector(selector)
-    ItemElement.querySelector('.item-description').innerHTML = sentenceArray[item.index]
-}
-
-const drawItem = (item) => {
-    let itemClass = `item${item.index}`
-    const itemTemplate =`
-            <h3 class="item-title">${item.index + 1}.&nbsp;${item.title}</h3>
-            <div class="item-description"></div>  
-        `;
-    const Item = document.createElement('div');
-    Item.classList.add('item-wrapper')
-    Item.classList.add(itemClass)
-    Item.innerHTML = itemTemplate;
-    Content.insertAdjacentElement('beforeend', Item)
+    }
 }
 
 window.addEventListener('scroll', onScroll);
