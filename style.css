@@ -313,3 +313,17 @@ footer {
         font-size: 16px;
     }
 }
+@media (max-width: 1000px) {
+    #content {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+    .item-wrapper {
+        margin: 0 10px;
+    }  
+}
+@media (max-width: 700px) {
+    #content {
+        justify-content: center;
+    }    
+}
