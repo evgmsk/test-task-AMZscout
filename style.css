@@ -77,7 +77,6 @@ html {
 
 .header_search-form {
     width: 100%;
-    /* transition: all .3s; */
     max-width: 1000px;
     height: 80px;
     margin: 0 auto;
@@ -190,7 +189,7 @@ input:focus + label, input.dirty + label {
 
 .item-wrapper {
     width: 300px;
-    height: 150px;
+    height: 140px;
 }
 
 .item-wrapper .item-title {
